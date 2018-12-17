@@ -54,6 +54,9 @@ def incre_maps(count_map, bool_map, claim):
     return count_map
 
 def scan_map(count_map, claim):
+    '''
+    Part Two Solution func
+    '''
     y_start = claim['coords'][0]
     x_start = claim['coords'][1]
     x_end = x_start + claim['area'][1]
@@ -82,12 +85,14 @@ if __name__ == "__main__":
                 intersecting_count += 1
 
 
+    #Part one solution
     print("FINAL INTERSECTION COUNT:", intersecting_count)
 
     for claim in claim_list:
         b_overlaps = scan_map(fab_arr, claim)
 
         if not b_overlaps:
+            #Part Two solution
             print("CLAIM:", claim['id'], "DOES NOT OVERLAP")
 
     #print(fab_check_arr)

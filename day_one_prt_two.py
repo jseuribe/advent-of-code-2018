@@ -1,3 +1,6 @@
+'''
+https://adventofcode.com/2018/day/1
+'''
 import requests
 
 day_one_input_url = "https://adventofcode.com/2018/day/1/input"

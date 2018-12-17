@@ -1,3 +1,6 @@
+'''
+https://adventofcode.com/2018/day/2
+'''
 boxcodes_fname = "boxcodes.txt"
 
 def get_codes():

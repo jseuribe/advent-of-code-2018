@@ -1,3 +1,7 @@
+'''
+https://adventofcode.com/2018/day/3
+'''
+
 import re
 
 claims_fname = "claims.txt"

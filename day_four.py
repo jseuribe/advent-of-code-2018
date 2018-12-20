@@ -65,6 +65,7 @@ if __name__ == "__main__":
     month_list = {key: [] for key in range(1,13)}
     month_key_list = []
 
+    #Round one processing: Split up actions by month, and group them together
     for sched_line in schedule:
 
         month_list[int(retrieve_mon(sched_line))].append(sched_line)
@@ -80,7 +81,7 @@ if __name__ == "__main__":
 
         month_list[month].sort(key=retrieve_day)
 
-
+        #Round Three: Group actions performed within individual days, and group them under their respective month
         for action in month_list[month]:
 
             if retrieve_day(action) not in actions_per_day_map[month]:
@@ -88,12 +89,14 @@ if __name__ == "__main__":
         
             actions_per_day_map[month][retrieve_day(action)].append(action)
 
+        #Round Four: For every day, initialize a 60 element/minute time table array.
         for sched_line in month_list[month]:
             day = retrieve_day(sched_line)
 
             if day not in time_table[month]:
                 time_table[month].append((day, [-1 for x in range(0,60)]))
     
+    #Round Five: Sort the times within each day by minute, then by hour
     for month in actions_per_day_map:
         for day in actions_per_day_map[month]:
             actions_per_day_map[month][day].sort(key=retrieve_minute)
@@ -103,6 +106,7 @@ if __name__ == "__main__":
 
     final_chronological_list = []
 
+    #Round Six: Create the final chronological itinerary
     for month in actions_per_day_map:
         for day in actions_per_day_map[month]:
             for action in actions_per_day_map[month][day]:
@@ -112,6 +116,10 @@ if __name__ == "__main__":
     c_date = ''
     b_isasleep = False
     asleep_start = -1
+
+    '''
+    Go through the now chronologically sorted items and determine minutes that guards were asleep
+    '''
     for action in final_chronological_list:
         print("{0} {1} {2} {3}".format(action['date'], action['time'], action.get('guard_id', 'NA'), action['action']))
 
@@ -119,15 +127,6 @@ if __name__ == "__main__":
         this_date = action.get('date')
         this_month = retrieve_mon(action)
         this_day = retrieve_day(action)
-
-        #check if it's a new day:
-        '''
-        if c_date != this_date:
-            c_date = this_date
-            c_guard_id = None  
-            b_isasleep = False
-            asleep_start = -1
-        '''
 
         if this_guard_id is not None:
             c_guard_id = this_guard_id
@@ -139,6 +138,8 @@ if __name__ == "__main__":
             asleep_start = retrieve_minute(action)
         elif 'wakes up' in action['action'] and b_isasleep:
             #print("WAKE UP WAKE UP WAKE UP", c_guard_id)
+
+            #Round Seven: As sleep/wake intervals are encountered, mark elements within each day by the guard asleep during them
             for index in range(asleep_start, retrieve_minute(action)):
                 time_table[this_month][this_day][1][index] = c_guard_id
 
@@ -151,6 +152,7 @@ if __name__ == "__main__":
 
     id_min_map = {}
     tot_min_asleep = {}
+    #Round Nine: Sum up the total minutes each guard was asleep across the itinerary
     for month in time_table:
         for day in time_table[month]:
             for index, entry in enumerate(day[1]):
@@ -168,6 +170,7 @@ if __name__ == "__main__":
     
     max_min_per_id = {key: 0 for key in id_min_map}
 
+    #Round Ten: Determine what given minute was each guard most asleep during
     for id in id_min_map:
         #print(id_min_map[id])
         c_max = 0
@@ -179,11 +182,12 @@ if __name__ == "__main__":
     sleepiest_guard = ''
     sleepiest_guard_val = 0
 
+    #FINAL ROUND, LET'S ROCK: Determine the sleepiest guard, Then look them up in the max_min_per_id dictionary
     for guard in tot_min_asleep:
         if tot_min_asleep[guard] > sleepiest_guard_val:
             sleepiest_guard_val = tot_min_asleep[guard]
             sleepiest_guard = guard
     
     print("THE SLEEPIEST GUARD:", sleepiest_guard, "THE MINUTE THEY WERE MOST ASLEEP DURING:", max_min_per_id[sleepiest_guard])
+    print("FINAL RESULT:", int(sleepiest_guard[1:])*max_min_per_id[sleepiest_guard])
     #print(time_table)
-    

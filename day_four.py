@@ -79,6 +79,7 @@ if __name__ == "__main__":
             time_table[month] = []
             actions_per_day_map[month] = {}
 
+        #Round Two: Sort the days within each month so that they're ascending order
         month_list[month].sort(key=retrieve_day)
 
         #Round Three: Group actions performed within individual days, and group them under their respective month
@@ -152,7 +153,7 @@ if __name__ == "__main__":
 
     id_min_map = {}
     tot_min_asleep = {}
-    #Round Nine: Sum up the total minutes each guard was asleep across the itinerary
+    #Round Eight: Sum up the total minutes each guard was asleep across the itinerary
     for month in time_table:
         for day in time_table[month]:
             for index, entry in enumerate(day[1]):
@@ -170,7 +171,7 @@ if __name__ == "__main__":
     
     max_min_per_id = {key: 0 for key in id_min_map}
 
-    #Round Ten: Determine what given minute was each guard most asleep during
+    #Round Nine: Determine what given minute was each guard most asleep during
     for id in id_min_map:
         #print(id_min_map[id])
         c_max = 0
@@ -190,4 +191,18 @@ if __name__ == "__main__":
     
     print("THE SLEEPIEST GUARD:", sleepiest_guard, "THE MINUTE THEY WERE MOST ASLEEP DURING:", max_min_per_id[sleepiest_guard])
     print("FINAL RESULT:", int(sleepiest_guard[1:])*max_min_per_id[sleepiest_guard])
-    #print(time_table)
+
+    #Part Two: Determine minute that was most slept during.
+    leading_minute = 0
+    leading_minute_val = 0
+    leading_guard = ''
+
+    for id in id_min_map:
+        for minute in id_min_map[id]:
+            if id_min_map[id][minute] > leading_minute_val:
+                leading_minute = minute
+                leading_minute_val = id_min_map[id][minute]
+                leading_guard = id
+    
+    print("Guard", leading_guard, "Most Frequently Slept This Amount of times:", leading_minute_val, "During minute:", leading_minute)
+    print("PART TWO FINAL VAL:", int(leading_guard[1:])*leading_minute)

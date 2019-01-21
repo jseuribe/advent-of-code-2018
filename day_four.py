@@ -12,7 +12,7 @@ id_regexp = r'#\d[0-9]{0,3}'
 
 act_regexp = r'\].(.*)'
 
-four_inp = "day_four_sched.txt"
+four_inp = "inp/day_four_sched.txt"
 #four_inp = "day_four_sample.txt"
 def get_schedules():
 

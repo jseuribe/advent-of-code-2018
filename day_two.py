@@ -3,7 +3,7 @@ https://adventofcode.com/2018/day/2
 '''
 from collections import defaultdict
 
-boxcodes_fname = "boxcodes.txt"
+boxcodes_fname = "inp\\boxcodes.txt"
 
 def get_codes():
     boxcodes_map = {}

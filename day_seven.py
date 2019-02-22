@@ -61,9 +61,11 @@ def find_path(graph):
     while not isEmpty(graph):
         candidates = []
 
+        #Determine what nodes have no incoming edges.
         for node in graph.keys():
             c_count = 0
 
+            #Examine all nodes, and determine which have connections to it
             for conn_node in graph.keys():
                 if conn_node == node:
                     continue
@@ -71,8 +73,10 @@ def find_path(graph):
                     c_arr = graph[conn_node]
 
                     if c_arr.get(node):
+                        #If there is a node connected to our currently processing node, then increment
                         c_count+=1
         
+            #if this value is 0, then this node has no incoming connections. it is next in the step order
             if c_count == 0:
                 candidates.append(node)
 
@@ -257,8 +261,8 @@ if __name__ == "__main__":
 
     #keep the graph for problem 2
     step_map = copy(graph)
-    #print(step_map)
+
     #determine problem 1's solution
     exec_steps = find_path(graph)
-
-    calculate_time_to_complete(step_map, exec_steps)
+    print(exec_steps)
+    #calculate_time_to_complete(step_map, exec_steps)

@@ -3,7 +3,7 @@ import sys
 
 sys.setrecursionlimit(500000)
 license_file = "inp\\day_eight.txt"
-#using a global counter because...well it makes sense I guess! (thse would just be in the local scope)
+#using a global counter because...well it makes sense I guess! (these would just be in the local scope...but i am lazy)
 global_data = []
 element_list = []
 
@@ -17,6 +17,10 @@ class node:
         self.meta_data_list = []
         self.children_nodes = []
         self.parent_node = None
+
+        self.value = 0
+        self.b_value_set = False
+
 
     def set_values(self, children, meta_data, index, meta_data_list):
         self.children = children
@@ -49,6 +53,9 @@ def get_lengths(node):
 def parse_node(node, step=0):
     '''
     extremely bad first recursive attempt
+    This actually kind of works (worked with example), but Python's bad at tail recursion!!!
+    Not even setting the recursion depth helped it...
+    Maybe this approach works in a language that's tail recursion friendly???
     '''
     node_count = node[0]
     meta_data = node[1]
@@ -61,7 +68,8 @@ def parse_node(node, step=0):
         #print("Meta data:", n_node_meta_data)
         global_data.extend(n_node_meta_data)
         
-        index_at += 2+len(n_node_meta_data)
+        index_at += 2+get_lengths(n_node)
+        #I thought freeing up memory would help..but alas..
         del n_node_meta_data
         del n_node
         print("Index:", index_at, "at step:", step)
@@ -69,14 +77,18 @@ def parse_node(node, step=0):
         node_count -= 1
     
     #print("INDEX:", index_at)
-    if step == 0:
-        index_at += 3
+    index_at += node.index + get_lengths(n_node)
     node_meta_data = element_list[index_at+1:index_at+meta_data+1]
     return node_meta_data
 
 def parse_tree(node, step=0):
-
+    '''
+    Part One Solution/Tree builder for part two
+    element_list containing the values of the input, and global_list containing the meta_data of all nodes, is global
+    They could be local here, but it wouldn't really matter!!!
+    '''
     children = node.children
+    #Think of the memo as our "Memory Stack"
     memo = [node]
     memo_at = 0
 
@@ -85,57 +97,70 @@ def parse_tree(node, step=0):
         print("cmemo:", memo[memo_at].print(), memo[memo_at].counter_children)
 
         if memo[memo_at].counter_children == 0:
+            '''State where the children of this node have been visited'''
+
             if memo[memo_at].parent_node:
+                #If this is a node that has a parent, decrement its parent children by one, signifying its child has been visited
                 memo[memo_at].parent_node.counter_children -= 1
+            
             print("no children left")
             incre_val = get_lengths(memo[memo_at])
-            print("incre val:", incre_val)
+
+            #Fetch the current node's meta data by adding the entries that its children occupies, then grabbing the x elements after those
             memo[memo_at].meta_data_list.extend(element_list[memo[memo_at].index+incre_val+1:memo[memo_at].index+incre_val+1+memo[memo_at].meta_data])
+            
             print("meta data:", memo[memo_at].meta_data_list)
             global_data.extend(memo[memo_at].meta_data_list)
+
             memo.pop()
+            #After consuming the current node
             if memo:
+                #Either jump back to the node's parent
                 print("REMAINDER MEMO")
                 memo_at -= 1
                 c_index = memo[memo_at].index
             else:
+                #Or we're done processing the tree.
                 print("EMPTY")
 
             continue
 
+        #If the node has children to speak of
         if len(memo[memo_at].children_nodes) > 0:
-            #if the current parent node has children
+            #if the current parent node has children, increment the next node to check according to the children of this current node visited
             c_index += get_lengths(memo[memo_at])
 
+        #obtain the next child
         next_node = obtain_header_at(c_index)
         memo[memo_at].children_nodes.append(next_node)
 
         if next_node.counter_children == 0:
-
+            #State where the next node has children already..could probably have handled this end state a bit better
             print("no children")
             c_node_meta_data = element_list[next_node.index+1:next_node.index+1+next_node.meta_data]
             print("meta data", c_node_meta_data)
+            #Decrement the children of this current node by one
             memo[memo_at].counter_children -= 1
 
         else:
+            #This node has children
             print("node has children to be processed")
+            #Set the node's parent to the current position in the memo
             next_node.parent_node = memo[memo_at]
+            #Increment the memo position, add the node to the memo, and increment the counter by 2
             memo_at += 1
             memo.append(next_node)
             c_node_meta_data = []
             c_index += 2
 
-
-        #print("meta data",c_child_meta_data)
-
         if c_node_meta_data:
             global_data.extend(c_node_meta_data)
             next_node.meta_data_list.extend(c_node_meta_data)
-
-
     
 def collect_nodes(node):
-
+    '''
+    Part Two Solution Function
+    '''
     if not node.children_nodes:
         print(node.meta_data_list)
         global_data.extend(node.meta_data_list)
@@ -156,6 +181,34 @@ def print_obtained_nodes(node):
     
     print(node.print())
 
+def collect_sums(node):
+
+    if node.children == 0:
+        #If this is a childless node, its value is just its meta-data-list
+        node.value = sum(node.meta_data_list)
+        node.b_value_set = True
+        return
+
+    c_sum = 0
+
+    #Otherwise, it is the values of its children, corresponding to the entries of its meta data list
+    for c_node_index in node.meta_data_list:
+
+        if c_node_index > node.children:
+            #if the entry is for a nonexistant child (IE: bigger than the actual child list)
+            continue
+        else:
+            c_node = node.children_nodes[c_node_index-1]
+
+            if c_node.b_value_set:
+                c_sum += c_node.value
+            else:
+                collect_sums(c_node)
+                c_sum += c_node.value
+    
+    node.value = c_sum
+    node.b_value_set = True
+
 def parseInp():
 
     with open(license_file, 'r') as f:
@@ -168,17 +221,13 @@ def parseInp():
     return element_list
 
 if __name__ == "__main__":
+    
     element_list = parseInp()
     print("length of elements:", len(element_list))
     first_node_header = obtain_first_node_header(element_list)
 
     parse_tree(first_node_header)
+    print("PART ONE SOLUTION:", sum(global_data))
 
-    #collect_nodes(first_node_header)
-
-    #print(global_data)
-
-    print("results:")
-    print_obtained_nodes(first_node_header)
-
-    print(sum(global_data))
+    collect_sums(first_node_header)
+    print("PART TWO SOLUTION:", first_node_header.value)

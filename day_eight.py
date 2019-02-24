@@ -15,7 +15,6 @@ class node:
         self.meta_data = meta_data
         self.index = index
         self.meta_data_list = []
-        self.incre_value = 0
         self.children_nodes = []
         self.parent_node = None
 
@@ -177,7 +176,7 @@ if __name__ == "__main__":
 
     #collect_nodes(first_node_header)
 
-    print(global_data)
+    #print(global_data)
 
     print("results:")
     print_obtained_nodes(first_node_header)

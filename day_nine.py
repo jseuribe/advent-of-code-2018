@@ -1,7 +1,7 @@
 #https://adventofcode.com/2018/day/9
 
 players = 400
-last_marble = 71864
+last_marble = 71864*100
 
 def establish_player_chart(players):
     player_score_card = {}
